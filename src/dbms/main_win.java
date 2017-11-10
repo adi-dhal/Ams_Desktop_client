@@ -7,10 +7,30 @@ package dbms;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  *
@@ -19,9 +39,11 @@ import javax.swing.table.DefaultTableModel;
 public class main_win extends javax.swing.JFrame {
     
     
+    private static String url ="http://192.168.43.111:8080/Sports_ams/Category_servlet";//incomplete
     /**
      * Creates new form main_win
      */
+    
     public main_win() {
         initComponents();
         
@@ -414,13 +436,48 @@ public class main_win extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initialiseMain(){
-        //Initialising drop down menus
-        String[] itemTypeList = {"Football", "Badminton", "Cricket bat" };
-        PopulateItemTypeList( itemTypeList );
+        String[] categories =null;
+        try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
+        {
+            HttpPost request= new HttpPost(url);
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("type",
+                    "enquiry"));
+            request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            HttpResponse response = httpclient.execute(request);            
+            String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+            try
+            {
+                JSONParser parser =new JSONParser();
+                Object resultObject = parser.parse(result);
+                JSONObject obj = (JSONObject)resultObject;
+                if(obj.get("type").toString().equals("category"))
+                {
+                    int num_category = Integer.valueOf(obj.get("no_category").toString());
+                    if (num_category != 0)
+                    {
+                        categories =new String[num_category];
+                        for(int count = 1;count<=num_category;count++)
+                        {
+                            categories[count-1] = obj.get("category_"+Integer.toString(count)).toString();
+                        }
+                    }   
+                }
+            }catch(Exception e){
+            }
+            
+        }catch(Exception ex)
+        {
+        }
+        if(categories != null)
+            PopulateItemTypeList( categories );
+        else
+        {String[] no_item ={"no_items"};
+            PopulateItemTypeList(no_item);}            
         
         //Setting table attributes as per selected item type
         SettingItemTypeListener();
-        
+ 
         
     }
     
@@ -575,9 +632,9 @@ public class main_win extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-
-                new main_win().setVisible(true);
-            }
+                    new main_win().setVisible(true);
+                }
+            
         });
         
         
