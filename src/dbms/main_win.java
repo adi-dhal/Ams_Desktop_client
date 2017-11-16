@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -39,7 +40,9 @@ import org.json.simple.parser.ParseException;
 public class main_win extends javax.swing.JFrame {
     
     
-    private static String url ="http://192.168.43.111:8080/Sports_ams/Category_servlet";//incomplete
+    private static String Cat_url ="http://10.21.1.227:8080/MechAms/CategoryServlet";
+    private static String Prod_url="http://10.21.1.227:8080/MechAms/ProductServlet";
+//incomplete
     /**
      * Creates new form main_win
      */
@@ -80,7 +83,7 @@ public class main_win extends javax.swing.JFrame {
         selectAttr_text = new javax.swing.JLabel();
         AddNewItemTypePanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
+        addNewItemTypeTable = new javax.swing.JTable();
         newType = new javax.swing.JTextField();
         attrName_text = new javax.swing.JLabel();
         itemType_text = new javax.swing.JLabel();
@@ -92,7 +95,7 @@ public class main_win extends javax.swing.JFrame {
         selectItemType_box_display = new javax.swing.JComboBox<>();
         deleteSelected_button_display = new javax.swing.JButton();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable3 = new javax.swing.JTable();
+        displayItemTypeTable = new javax.swing.JTable();
         TopMenuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -218,7 +221,7 @@ public class main_win extends javax.swing.JFrame {
 
         Level2Panel.add(AddItemPanel, "card3");
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        addNewItemTypeTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -226,8 +229,8 @@ public class main_win extends javax.swing.JFrame {
 
             }
         ));
-        jTable2.getTableHeader().setReorderingAllowed(false);
-        jScrollPane2.setViewportView(jTable2);
+        addNewItemTypeTable.getTableHeader().setReorderingAllowed(false);
+        jScrollPane2.setViewportView(addNewItemTypeTable);
 
         newType.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -246,8 +249,18 @@ public class main_win extends javax.swing.JFrame {
         });
 
         addAttr_button.setText("Add Attribute");
+        addAttr_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addAttr_buttonActionPerformed(evt);
+            }
+        });
 
         confirmAddItemType_button.setText("Confirm");
+        confirmAddItemType_button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmAddItemType_buttonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout AddNewItemTypePanelLayout = new javax.swing.GroupLayout(AddNewItemTypePanel);
         AddNewItemTypePanel.setLayout(AddNewItemTypePanelLayout);
@@ -347,6 +360,16 @@ public class main_win extends javax.swing.JFrame {
         selectItemType_text_display.setText("Select Item Type");
 
         selectItemType_box_display.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        selectItemType_box_display.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                selectItemType_box_displayItemStateChanged(evt);
+            }
+        });
+        selectItemType_box_display.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectItemType_box_displayActionPerformed(evt);
+            }
+        });
 
         deleteSelected_button_display.setText("Delete Selected");
         deleteSelected_button_display.addActionListener(new java.awt.event.ActionListener() {
@@ -355,7 +378,7 @@ public class main_win extends javax.swing.JFrame {
             }
         });
 
-        jTable3.setModel(new javax.swing.table.DefaultTableModel(
+        displayItemTypeTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -363,8 +386,14 @@ public class main_win extends javax.swing.JFrame {
 
             }
         ));
-        jTable3.getTableHeader().setReorderingAllowed(false);
-        jScrollPane3.setViewportView(jTable3);
+        displayItemTypeTable.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        displayItemTypeTable.getTableHeader().setReorderingAllowed(false);
+        displayItemTypeTable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                displayItemTypeTableMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(displayItemTypeTable);
 
         javax.swing.GroupLayout DisplayItemTypePanelLayout = new javax.swing.GroupLayout(DisplayItemTypePanel);
         DisplayItemTypePanel.setLayout(DisplayItemTypePanelLayout);
@@ -436,10 +465,12 @@ public class main_win extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void initialiseMain(){
+    //      String[] categories = { "Football", "Cricket", "Maut ka Khel" };
+        
         String[] categories =null;
         try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
         {
-            HttpPost request= new HttpPost(url);
+            HttpPost request= new HttpPost(Cat_url);
             List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
             nameValuePairs.add(new BasicNameValuePair("type",
                     "enquiry"));
@@ -477,6 +508,7 @@ public class main_win extends javax.swing.JFrame {
         
         //Setting table attributes as per selected item type
         SettingItemTypeListener();
+        DisplayItemTypeListener();
  
         
     }
@@ -511,7 +543,32 @@ public class main_win extends javax.swing.JFrame {
     }//GEN-LAST:event_DisplayActionPerformed
 
     private void deleteSelected_button_displayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteSelected_button_displayActionPerformed
-        // TODO add your handling code here:
+        DefaultTableModel tableModel = (DefaultTableModel) displayItemTypeTable.getModel();
+        
+        String tableName = selectItemType_box_display.getSelectedItem().toString();
+        String idNo = tableModel.getValueAt( displayItemTypeTable.getSelectedRow(), 0 ).toString();
+        //Send the 'idNo' to be deleted from the selected table in DB
+        //Apna delete ka code yaha dalo
+        try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
+        {
+            HttpPost request= new HttpPost(Prod_url);
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("type","delete"));
+            nameValuePairs.add(new BasicNameValuePair("table_name",tableName));
+            nameValuePairs.add(new BasicNameValuePair("id",idNo));
+            request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            HttpResponse response = httpclient.execute(request);            
+            String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+        }catch(Exception ex)
+        {
+        }             
+      
+        String titleBar = "Selected row deleted from the table";
+        String infoMsg = "Item Id = " + idNo + "\n" + "Item Type = " + tableName;
+        JOptionPane.showMessageDialog( null, infoMsg, titleBar, JOptionPane.INFORMATION_MESSAGE );
+        
+        //Update the display table from the DB
+        PopulateTable();
     }//GEN-LAST:event_deleteSelected_button_displayActionPerformed
 
     private void attrNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attrNameActionPerformed
@@ -531,6 +588,11 @@ public class main_win extends javax.swing.JFrame {
         Level2Panel.add( AddItemPanel );
         Level2Panel.repaint();
         Level2Panel.revalidate();
+        
+        DefaultTableModel tableModel = (DefaultTableModel) addNewItemTypeTable.getModel();
+        tableModel.setColumnCount( 0 );
+        newType.setText( "" );
+        attrName.setText( "" );
     }//GEN-LAST:event_selectItemType_boxActionPerformed
 
     private void addAttrValue_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAttrValue_buttonActionPerformed
@@ -538,7 +600,7 @@ public class main_win extends javax.swing.JFrame {
         
         DefaultTableModel tableModel = (DefaultTableModel) addItemTable.getModel();
         tableModel.setRowCount( 1 );
-        tableModel.setValueAt( attrValue.getText().toString(), 0, colNo );
+        tableModel.setValueAt( attrValue.getText(), 0, colNo );
         
         attrValue.setText("");
     }//GEN-LAST:event_addAttrValue_buttonActionPerformed
@@ -550,11 +612,32 @@ public class main_win extends javax.swing.JFrame {
     private void confirmAddItem_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmAddItem_buttonActionPerformed
         DefaultTableModel tableModel = (DefaultTableModel) addItemTable.getModel();
         
+        String attribute_name = "attribute_name_";
+        String attribute_val = "attribute_val_";
+        try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
+        {
+            HttpPost request= new HttpPost(Prod_url);
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("type","insert"));
+            nameValuePairs.add(new BasicNameValuePair("table_name",selectItemType_box.getSelectedItem().toString()));
+            nameValuePairs.add(new BasicNameValuePair("no_attributes",Integer.toString(tableModel.getColumnCount())));
+            for(int i = 0; i < tableModel.getColumnCount();i++)
+            {
+                nameValuePairs.add(new BasicNameValuePair(attribute_name+Integer.toString(i+1),tableModel.getColumnName( i )));
+                nameValuePairs.add(new BasicNameValuePair(attribute_val+Integer.toString(i+1),tableModel.getValueAt( 0, i ).toString()));                
+            }
+            request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            HttpResponse response = httpclient.execute(request);            
+            String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+        }catch(Exception ex)
+        {
+        }        
+        
         String titleBar = selectItemType_box.getSelectedItem().toString() + " - Item Added";
         //Use "infoMsg" to send query to add tuple to the table "selectItemType_box.getSelectedItem().toString()"
         String infoMsg = "";
         for( int i = 0; i < tableModel.getColumnCount(); i++ ){
-            infoMsg += tableModel.getColumnName( i ).toString() + " = " + tableModel.getValueAt( 0, i ).toString() + "\n";
+            infoMsg += tableModel.getColumnName( i ) + " = " + tableModel.getValueAt( 0, i ).toString() + "\n";
         }
         JOptionPane.showMessageDialog( null, infoMsg, titleBar, JOptionPane.INFORMATION_MESSAGE );
         tableModel.setColumnCount( 0 );
@@ -569,11 +652,130 @@ public class main_win extends javax.swing.JFrame {
         Level2Panel.repaint();
         Level2Panel.revalidate();
     }//GEN-LAST:event_addNewItemType_buttonActionPerformed
+
+    private void addAttr_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAttr_buttonActionPerformed
+        DefaultTableModel tableModel = (DefaultTableModel) addNewItemTypeTable.getModel();
+        
+        tableModel.addColumn( attrName.getText() );
+        
+        attrName.setText("");
+    }//GEN-LAST:event_addAttr_buttonActionPerformed
+
+    private void confirmAddItemType_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmAddItemType_buttonActionPerformed
+        DefaultTableModel tableModel = (DefaultTableModel) addNewItemTypeTable.getModel();
+
+        try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
+        {
+            HttpPost request= new HttpPost(Cat_url);
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(1);
+            nameValuePairs.add(new BasicNameValuePair("type","create"));
+            nameValuePairs.add(new BasicNameValuePair("table_name",newType.getText()));
+            nameValuePairs.add(new BasicNameValuePair("no_attributes",Integer.toString(tableModel.getColumnCount())));
+            for(int i = 0; i < tableModel.getColumnCount();i++)
+            {
+                nameValuePairs.add(new BasicNameValuePair("attribute_name_"+Integer.toString(i+1),tableModel.getColumnName( i )));             
+            }
+            request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            HttpResponse response = httpclient.execute(request);            
+            String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+        }catch(Exception ex)
+        {
+        }             
+        String titleBar = newType.getText() + " - New Item Type Added";
+        String infoMsg = "Created table " + newType.getText() + " with following attributes:\n";
+        for( int i = 0; i < tableModel.getColumnCount(); i++ ){
+            infoMsg += "\n" + tableModel.getColumnName( i );
+        }
+        //Make table in DB, with table name 'newType.getText().toString()' and columns 'tableModel.getColumnName( i ).toString()' for all i's
+        JOptionPane.showMessageDialog( null, infoMsg, titleBar, JOptionPane.INFORMATION_MESSAGE );
+        
+        tableModel.setColumnCount( 0 );
+        newType.setText( "" );
+        attrName.setText( "" );
+    }//GEN-LAST:event_confirmAddItemType_buttonActionPerformed
+    
+    @SuppressWarnings("empty-statement")
+    private void PopulateTable(){
+        DefaultComboBoxModel boxModel = (DefaultComboBoxModel) selectItemType_box_display.getModel();
+        Object selected = boxModel.getSelectedItem();
+        
+        String[][] tuples = null;
+        String[] attr_names = null;
+        String[] temp;
+        int count,count_h;
+        try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
+        {
+            HttpPost request= new HttpPost(Prod_url);
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+            nameValuePairs.add(new BasicNameValuePair("type","enquiry"));
+            nameValuePairs.add(new BasicNameValuePair("table_name", selected.toString()));
+            request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+            HttpResponse response = httpclient.execute(request);            
+            String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+            try
+            {
+                JSONParser parser =new JSONParser();
+                Object resultObject = parser.parse(result);
+                JSONObject obj = (JSONObject)resultObject;
+                int tuple_count = Integer.valueOf(obj.get("count").toString());
+                int attr_count = Integer.valueOf(obj.get("attr_count").toString());
+                tuples = new String[tuple_count][attr_count]; 
+                attr_names = new String[attr_count];
+                for (count = 1;count <= attr_count;count++)
+                {
+                    attr_names[count-1] = obj.get("attributes_"+Integer.toString(count)).toString();
+                }
+                for (count = 1;count <= tuple_count;count++)
+                {
+                    temp = obj.get("row_"+Integer.toString(count)).toString().split("-");
+                    for (count_h = 0;count_h < attr_count;count_h++)
+                    {
+                        tuples[count-1][count_h] = temp[count_h];
+                    }
+                }
+            }
+            catch(Exception e){
+            }
+        }
+        catch(Exception ex){
+        }
+        
+        
+        InitialiseColumns( displayItemTypeTable, attr_names );
+        
+        DefaultTableModel tableModel = (DefaultTableModel) displayItemTypeTable.getModel();
+        tableModel.setRowCount( 0 );
+        
+        //Get total no. of tuples in the given table from the DB
+        
+        //Get 2-D tuples from DB
+        
+        for( String[] tuple: tuples ){
+            //Extract each tuple one-by-one
+            //tuple = allTuples[ 2 ];
+            //tuple = { Integer.toString( i ), "Data1", "Data2", "Data3" }; Doesn't work
+            
+            tableModel.addRow( tuple );
+        }
+    }
+    
+    private void selectItemType_box_displayItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_selectItemType_box_displayItemStateChanged
+        
+    }//GEN-LAST:event_selectItemType_box_displayItemStateChanged
+
+    private void selectItemType_box_displayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectItemType_box_displayActionPerformed
+        
+    }//GEN-LAST:event_selectItemType_box_displayActionPerformed
+
+    private void displayItemTypeTableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_displayItemTypeTableMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_displayItemTypeTableMouseClicked
     
     
     //Handling drop down box
     private void PopulateItemTypeList( String[] itemTypeList ){ 
         selectItemType_box.setModel( new DefaultComboBoxModel( itemTypeList ) );
+        selectItemType_box_display.setModel( new DefaultComboBoxModel( itemTypeList ) );
     }
     
     private void PopulateAttrList( String[] attrList ){ 
@@ -581,8 +783,9 @@ public class main_win extends javax.swing.JFrame {
     }
     
     //Initiating the columns of the table
-    private void InitialiseColumns( String[] attrList ){
-        DefaultTableModel tableModel = (DefaultTableModel) addItemTable.getModel();
+    private void InitialiseColumns( JTable table, String[] attrList ){
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+        
         tableModel.setColumnCount( 0 );
         
         for( String attr: attrList ){
@@ -595,26 +798,84 @@ public class main_win extends javax.swing.JFrame {
             public void actionPerformed( ActionEvent event ){
                 JComboBox box = (JComboBox) event.getSource();
                 Object selected = box.getSelectedItem();
-                
-                //Use { selected.toString() } to send query to select the selected item type table and retrive its "attrList"
-                
-                //Uncomment this after database access
-//                String[] attrList = { "Company Name", "Size", "Quantity" };
-//                PopulateAttrList( attrList );
-                
-                //For testing without database access
-                if( selected.toString().equals( "Football")){
-                    String[] attrList = { "Company Name", "Size", "Quantity" };
-                    
-                    PopulateAttrList( attrList );
-                    InitialiseColumns( attrList );
+                String[] attrList =null;
+                try(CloseableHttpClient httpclient = HttpClientBuilder.create().build())
+                {
+                    HttpPost request= new HttpPost(Prod_url);
+                    List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                    nameValuePairs.add(new BasicNameValuePair("type","describe"));
+                    nameValuePairs.add(new BasicNameValuePair("table_name", selected.toString()));
+                    request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                    HttpResponse response = httpclient.execute(request);            
+                    String result = EntityUtils.toString(response.getEntity(),"UTF-8");
+                    try
+                    {
+                        JSONParser parser =new JSONParser();
+                        Object resultObject = parser.parse(result);
+                        JSONObject obj = (JSONObject)resultObject;
+                        if(obj.get("type").toString().equals("attributes"))
+                        {
+                            int num_category = Integer.valueOf(obj.get("no_attributes").toString());
+                            if (num_category != 0)
+                            {
+                                attrList =new String[num_category];
+                                for(int count = 1;count<=num_category;count++)
+                                {
+                                    attrList[count-1] = obj.get("attributes_"+Integer.toString(count)).toString();
+                                }
+                            }   
+                        }
+                    }catch(Exception e){
+                    }
+
+                }catch(Exception ex)
+                {
+                }
+                if( attrList == null){
+                    String[] no_Attr = { "noAttributes" };
+                    PopulateAttrList( no_Attr );
+                    InitialiseColumns( addItemTable, attrList );
+
                 }
                 else{
-                    String[] attrList = {"Just", "Checking"};
+                    String[] attrListWithoutId = new String[ attrList.length - 1 ];
+                    for( int i = 0; i < attrList.length; i++ ){
+                        if( i != 0 ){
+                            attrListWithoutId[ i - 1 ] = attrList[ i ];
+                        }
+                    }
                     
-                    PopulateAttrList( attrList );
-                    InitialiseColumns( attrList );
+                    PopulateAttrList( attrListWithoutId );
+                    InitialiseColumns( addItemTable, attrListWithoutId );
                 }
+
+            }
+        });
+    }
+    
+    private void DisplayItemTypeListener(){
+        selectItemType_box_display.addActionListener(new ActionListener(){
+            public void actionPerformed( ActionEvent event ){
+                //JComboBox box = (JComboBox) event.getSource();
+                //Object selected = box.getSelectedItem();
+                
+                //Use { selected.toString() } to get the selected table from DB and display its columns as 'attrList' and data stored in the table in form of tuples
+                
+                PopulateTable();
+                //if-else for testing - Remove if-else after DB access
+/*                if( selected.toString().equals( "Football")){
+                    //Get all column names of selected table
+                    String[] attrList = { "Id", "Company Name", "Size", "Quantity", "Colour" };
+
+                    InitialiseColumns( displayItemTypeTable, attrList ); 
+                    PopulateTable();
+                }
+                else{
+                    String[] attrList = {"Id", "Just", "Checking"};
+                    InitialiseColumns( displayItemTypeTable, attrList );
+                    PopulateTable();
+                }
+*/
             }
         });
     }
@@ -653,6 +914,7 @@ public class main_win extends javax.swing.JFrame {
     private javax.swing.JButton addAttrValue_button;
     private javax.swing.JButton addAttr_button;
     private javax.swing.JTable addItemTable;
+    private javax.swing.JTable addNewItemTypeTable;
     private javax.swing.JButton addNewItemType_button;
     private javax.swing.JLabel addNewItemType_text;
     private javax.swing.JTextField attrName;
@@ -661,14 +923,13 @@ public class main_win extends javax.swing.JFrame {
     private javax.swing.JButton confirmAddItemType_button;
     private javax.swing.JButton confirmAddItem_button;
     private javax.swing.JButton deleteSelected_button_display;
+    private javax.swing.JTable displayItemTypeTable;
     private javax.swing.JLabel itemType_text;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable jTable2;
-    private javax.swing.JTable jTable3;
     private javax.swing.JTextField newType;
     private javax.swing.JLabel or_text;
     private javax.swing.JComboBox<String> selectAttr_box;
